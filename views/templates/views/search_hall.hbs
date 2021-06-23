@@ -11,17 +11,55 @@ function validateForm() {
 document.forms["myForm"]["fromtime"].style.borderColor = "green";
 document.forms["myForm"]["totime"].style.borderColor = "green";
 document.forms["myForm"]["hall"].style.borderColor = "green";
+document.forms["myForm"]["curdate"].style.borderColor = "green";
+document.forms["myForm"]["classname"].style.borderColor = "green";
+document.forms["myForm"]["reason"].style.borderColor = "green";
 if(document.forms["myForm"]["hall"].value === "0"){
     document.forms["myForm"]["hall"].style.borderColor = "red";
     alert("Invalid hall name")
     return false;
     }
 
+if(document.forms["myForm"]["curdate"].value.length === 0){
+    alert("Invalid time")
+    document.forms["myForm"]["curdate"].style.borderColor = "red";
+    return false;
+}
 
-var fromtime = parseInt(document.forms["myForm"]["fromtime"].value.substring(0, 2));
-var totime = parseInt(document.forms["myForm"]["totime"].value.substring(0, 2));
-var fromtimeminute = parseInt(document.forms["myForm"]["fromtime"].value.substring(3, 5));
-var totimeminute = parseInt(document.forms["myForm"]["totime"].value.substring(3, 5));
+if(document.forms["myForm"]["curdate"].value.length === 0){
+    alert("Invalid date")
+    document.forms["myForm"]["curdate"].style.borderColor = "red";
+    return false;
+}
+
+const year = parseInt(document.forms["myForm"]["curdate"].value.substring(0, 4))
+const month = parseInt(document.forms["myForm"]["curdate"].value.substring(5, 7))
+const day = parseInt(document.forms["myForm"]["curdate"].value.substring(8, 10))
+const today = new Date();
+// '/'+(today.getMonth()+1)+'/'+today.getDate();
+if(year < today.getFullYear()){
+    alert("Invalid year")
+    document.forms["myForm"]["curdate"].style.borderColor = "red";
+    return false;
+}
+
+if(year === today.getFullYear() && month < today.getMonth()+1){
+    alert("Invalid month")
+    document.forms["myForm"]["curdate"].style.borderColor = "red";
+    return false;
+}
+
+if((year === today.getFullYear() && month === today.getMonth()+1) && day < today.getDate()){
+    alert("Invalid Day")
+    document.forms["myForm"]["curdate"].style.borderColor = "red";
+    return false;
+}
+
+
+const fromtime = parseInt(document.forms["myForm"]["fromtime"].value.substring(0, 2));
+const totime = parseInt(document.forms["myForm"]["totime"].value.substring(0, 2));
+const fromtimeminute = parseInt(document.forms["myForm"]["fromtime"].value.substring(3, 5));
+const totimeminute = parseInt(document.forms["myForm"]["totime"].value.substring(3, 5));
 
 if((fromtime > totime || fromtime === totime && (fromtimeminute > totimeminute || fromtimeminute === totimeminute))){
     alert("error1")
@@ -66,6 +104,21 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
 }
 
 
+if(document.forms["myForm"]["classname"].value.length === 0){
+    alert("Invalid class name")
+    document.forms["myForm"]["classname"].style.borderColor = "red";
+    return false;
+}
+
+if(document.forms["myForm"]["reason"].value.length === 0){
+    alert("Invalid reason")
+    document.forms["myForm"]["reason"].style.borderColor = "red";
+    return false;
+}
+
+return true
+
+
 }
 </script>
 
@@ -82,7 +135,7 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
             <div class="form-group row">
               <label for="example-date-input" class="col-2 col-form-label">Date</label>
               <div class="col-10">
-                <input class="form-control" type="date" name="date" value=new Date(date.getFullYear(), date.getMonth(), date.getDate()); id="example-date-input">
+                <input class="form-control" type="date" name="date" id="example-date-input">
               </div>
             </div>
 
@@ -111,9 +164,12 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
         </div>
     </div>
 
-        {{#if message }}
+    {{#if message }}
         <h4 class="alert alert-danger mt-4">{{message}}</h4>
     {{/if}}
+     {{#if messageBooked }}
+                <h4 class="alert alert-success mt-4">{{messageBooked}}</h4>
+     {{/if}}
 
     <div class="card">
            {{#if booking_detils}}
@@ -130,6 +186,7 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
                     <th scope="col">Department</th>
                     <th scope="col">Venue</th>
                     <th scope="col">Time</th>
+                    <th scope="col">Booking Id</th>
                   </tr>
                 </thead>
                 {{#each booking_detils_r}}
@@ -140,6 +197,7 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
                             <td>{{this.dept}}</td>
                             <td>{{this.hall_name}}</td>
                             <td>{{this.fromtime}} - {{this.totime}}</td>
+                            <td>{{this.booking_id}}</td>
                         </tr>
                     </tbody>
                 {{/each}}
@@ -166,7 +224,7 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
               Book the hall : For {{date}}
          </div>
         <div class="card-body">
-            <form action="/search/bookhall" name="myForm" method="post" onsubmit="return validateForm()">
+            <form action="/index/book" name="myForm" method="post" onsubmit="return validateForm()">
                 <div class="form-group row">
                 <label for="inputGroupSelect04" class="col-2 col-form-label">Hall Name</label>
                 <div class="col-10">
@@ -182,45 +240,32 @@ if((totime-fromtime === 1) && (60 - fromtimeminute + totimeminute < 15)){
                 </div>
             </div>
 
-
-<!--            <div class="form-group row">-->
-<!--                  <label for="example-date-input" class="col-2 col-form-label">Date</label>-->
-<!--                  <div class="col-10" width="">-->
-<!--                    <input style="width: fit-content" class="form-control" type="date" value="2011-08-19" id="example-date-input">-->
-<!--                      <input style="width: fit-content" class="form-control" type="time" value="00:00:00" id="example-time-input">-->
-<!--                      <input style="width: fit-content" class="form-control" type="time" value="00:00:00" id="example-time-input">-->
-<!--                  </div>-->
-<!--            </div>-->
             <div class="form-group row">
                 <label for="example-date-input" class="col-2 col-form-label">Date</label>
                 <div class="col-10">
                   <div class="row">
                     <div class="col-sm-3">
-                       <input style="width: fit-content" name="date" class="form-control" type="date" value="2011-08-19" id="example-date-input">
+                       <input style="width: fit-content" name="curdate" class="form-control" type="date" id="example-date-input">
                     </div>
                     <div class="col-sm-2">
-                       <input style="width: fit-content" name="fromtime" class="form-control" type="time" value="09:00" id="example-time-input">
-<!--                         <input style="width: fit-content" name="fromtime" class="form-control" min="09:00" max="18:00" type="time" value="09:00" id="example-time-input">-->
+                       <input style="width: fit-content" name="fromtime" class="form-control" type="time" value="09:00" id="example-time-input" />
                     </div>
-                    <div class="col-sm">
+                    <div class="col-sm 3">
                       <input style="width: fit-content" name="totime" class="form-control" type="time" value="18:00" id="example-time-input1">
-<!--                        <input style="width: fit-content" name="totime" class="form-control" type="time" min="09:00" max="18:00" value="18:00" id="example-time-input1">-->
+                    </div>
+                    <div class="col-sm 4">
+                      <input name="classname" placeholder="Class name.." class="form-control" type="text" value="" id="example-time-input1">
+                    </div>
+                       <div class="col-sm 5">
+                      <input name="reason" placeholder="Purpose.." class="form-control" type="text" value="" id="example-time-input1">
                     </div>
                   </div>
                 </div>
             </div>
                 <button style="width: 100px" type="submit" class="btn btn-primary">Submit</button>
             </form>
-             {{#if message1 }}
-                <h4 class="alert alert-danger mt-4">{{message1}}</h4>
-            {{/if}}
         </div>
     </div>
-
-
-
-
-
 
 
 </div>

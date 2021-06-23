@@ -148,17 +148,16 @@ router.get('/booked_details1', authController.isLoggedIn,(req, res) => {
 router.post('/bookhall',authController.isLoggedIn,(req,res) =>{
      if(req.user) {
        const { hall, date, fromtime, totime } = req.body;
+       const email = req.user.email;
+       const dept = req.user.dept;
+
+       if(hall === '0'){
+            return res.status(400).render('search_hall', {
+                message1: "Incorrect venue name",
+                user:req.user,
+            })
+       }
        console.log(req.body)
-
-
-
-
-       // if(hall === '0'){
-       //      return res.status(400).render('search_hall', {
-       //          message1: "Incorrect venue name",
-       //          user:req.user,
-       //      })
-       // }
        // console.log(date.length)
        // console.log(fromtime)
        // console.log(typeof totime)

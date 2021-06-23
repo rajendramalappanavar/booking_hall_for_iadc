@@ -33,16 +33,33 @@ router.get('/book_hall', authController.isLoggedIn,(req, res) => {
 
 
 
-router.post('/book', function(req, res) {
-    var hallname = req.body.hall_name;
+router.post('/book', authController.isLoggedIn,function(req, res) {
+// router.post('/book',function(req, res) {
+    // return console.log(req.body)
+
+    // var hallname = req.body.hall;
+    // var ff=req.body.fromtime;
+    // var tt=req.body.totime;
+    // var staff_name=req.body.staff_name;
+    // var email = req.body.email;
+    // var dept=req.body.dept;
+    // var classname=req.body.classname;
+    // var purpose = req.body.reason;
+    // var date = req.body.curdate;
+
+    // if(req.body.fromtime)
+
+     var hallname = req.body.hall;
     var ff=req.body.fromtime;
     var tt=req.body.totime;
-    var staff_name=req.body.staff_name;
-    var email = req.body.email;
-    var dept=req.body.dept;
-    var classname=req.body.class;
-    var purpose = req.body.purpose;
-    var date = req.body.date;
+    var staff_name=req.user.staff_name;
+    var email = req.user.email;
+    var dept=req.user.dept;
+    var classname=req.body.classname;
+    var purpose = req.body.reason;
+    var date = req.body.curdate;
+
+
     var sql = "SELECT * FROM booking_details WHERE hall_name = ? AND dates = ? AND ((fromtime = ? AND totime = ?) OR (fromtime <= ? AND totime > ?) OR (fromtime < ? AND totime >= ?))"
     connection.query(sql,[hallname,date,ff,tt,ff,ff,tt,tt], function (err, result) {
         if (err) throw err;
@@ -50,10 +67,18 @@ router.post('/book', function(req, res) {
               var sql = "INSERT INTO `booking_details` (`booking_id`, `staff_name`, `email`, `dept`, `hall_name`, `dates`, `fromtime`, `totime`, `class`, `purpose`, `booked_time`) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
               connection.query(sql,[staff_name,email,dept,hallname,date,ff,tt,classname,purpose,Math.round(now.getTime())], function (err, result, fields) {
                   if (err) throw err;
-                res.json({Message : "Successfully booked man"});
+                  res.status(200).render('search_hall', {
+                    messageBooked: "Successfully booked the hall!.",
+                    user:req.user
+            })
+                // res.json({Message : "Successfully booked man"});
               })
         } else{
-            res.json({Message : "Its already exist man"});
+             res.status(400).render('search_hall', {
+                message: "This hall has been booked already!.",
+                user: req.user
+            })
+            // res.json({Message : "Its already exist man"});
         }
     })
 })
